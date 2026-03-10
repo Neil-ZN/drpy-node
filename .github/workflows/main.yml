@@ -1,9 +1,8 @@
-name: 同步上游并自动合并到 my-config
-
+name: 同步hjdhnx并自动合并到dahuoji
 on:
   schedule:
-    - cron: '0 2 * * *'  # 每天北京时间10点自动执行
-  workflow_dispatch:     # 允许手动点一下运行
+    - cron: '0 3 * * *'  # 每天早上3点自动更新
+  workflow_dispatch:     # 可以手动点Run运行
 
 jobs:
   sync-and-merge:
@@ -14,23 +13,20 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # 1. 同步原作者仓库到你的 main 分支
-      - name: 同步上游 main
+      # 同步原作者 hjdhnx/drpy-node main 分支
+      - name: 同步上游仓库
         uses: aormsby/Fork-Sync-With-Upstream-action@v3.4.1
         with:
-          upstream_sync_repo: Neil-ZN/drpy-node
+          upstream_sync_repo: hjdhnx/drpy-node
           upstream_sync_branch: main
           target_sync_branch: main
           target_repo_token: ${{ secrets.GITHUB_TOKEN }}
 
-      # 2. 切换到 my-config 分支
-      - name: 切换到 my-config
-        run: git checkout my-config
-
-      # 3. 把 main 合并到 my-config
-      - name: 合并 main → my-config
+      # 合并 main → my-config
+      - name: 合并更新到自定义分支
         run: |
+          git checkout dahuoji
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git merge --no-ff origin/main -m "自动合并上游更新 main → my-config"
-          git push origin my-config
+          git merge --no-ff origin/main -m "自动合并上游更新"
+          git push origin dahuoji
