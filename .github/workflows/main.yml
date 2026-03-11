@@ -1,0 +1,32 @@
+name: 同步hjdhnx并自动合并到dahuoji
+on:
+  schedule:
+    - cron: '0 3 * * *'  # 每天早上3点自动更新
+  workflow_dispatch:     # 可以手动点Run运行
+
+jobs:
+  sync-and-merge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # 同步原作者 hjdhnx/drpy-node main 分支
+      - name: 同步上游仓库
+        uses: aormsby/Fork-Sync-With-Upstream-action@v3.4.1
+        with:
+          upstream_sync_repo: hjdhnx/drpy-node
+          upstream_sync_branch: main
+          target_sync_branch: main
+          target_repo_token: ${{ secrets.GITHUB_TOKEN }}
+
+      # 合并 main → my-config
+      - name: 合并更新到自定义分支
+        run: |
+          git checkout dahuoji
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git merge --no-ff origin/main -m "自动合并上游更新"
+          git push origin dahuoji
